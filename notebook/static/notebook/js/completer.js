@@ -175,6 +175,7 @@ define([
         var start = content.cursor_start;
         var end = content.cursor_end;
         var matches = content.matches;
+        var metadata = content.metadata;
 
         var cur = this.editor.getCursor();
         if (end === null) {
@@ -209,7 +210,8 @@ define([
                 str: matches[i],
                 type: "introspection",
                 from: from,
-                to: to
+                to: to,
+                meta: metadata[matches[i]]
             });
         }
 
@@ -300,7 +302,15 @@ define([
 
     Completer.prototype.build_gui_list = function (completions) {
         for (var i = 0; i < completions.length; ++i) {
-            var opt = $('<option/>').text(completions[i].str).addClass(completions[i].type);
+            if (completions[i].meta) {
+                //var opt = $('<option/>').addClass(completions[i].type).addClass(completions[i].meta.css);
+                //opt.append($('<i/>').addClass("fa").addClass("fa-" + completions[i].meta.icon));
+                //opt.append($('<span/>').text(completions[i].str));
+                //opt.append($('<small/>').text(completions[i].meta.info));
+                var opt = $('<option/>').addClass(completions[i].type).text("(fa-"+completions[i].meta.icon+")   "+completions[i].str+"   {"+completions[i].meta.info+"}");
+            } else {
+                var opt = $('<option/>').text(completions[i].str).addClass(completions[i].type);
+            }
             this.sel.append(opt);
         }
         this.sel.children().first().attr('selected', 'true');
@@ -390,17 +400,17 @@ define([
          * before events were disconnected and CodeMirror stopped
          * receiving events while the completer is focused.
          */
-        
+
         var that = this;
         var code = event.keyCode;
-        
+
         // don't handle keypress if it's not a character (arrows on FF)
         // or ENTER/TAB
         if (event.charCode === 0 ||
             code == keycodes.tab ||
             code == keycodes.enter
         ) return;
-        
+
         this.close();
         this.editor.focus();
         setTimeout(function () {
